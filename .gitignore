@@ -8,6 +8,8 @@ __pycache__/
 *.wav
 *.mp3
 *.flac
+models/
+result.txt
 
 # فایل‌های تنظیمات محلی
 .env

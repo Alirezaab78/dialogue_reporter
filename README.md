@@ -34,3 +34,31 @@ print(output)
 ```bash
 python -m pytest -q
 ```
+
+## گام دوم: رونویسی با Faster-Whisper
+
+وابستگی `faster-whisper` در `requirements.txt` اضافه شده است. برای نصب:
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+در ویندوز، اجرای CUDA به درایور NVIDIA و DLLهای سازگار CUDA/cuDNN نیاز دارد. نسخه درایور را از NVIDIA و نسخه CUDA/cuDNN سازگار با CTranslate2 را نصب کنید و مسیر DLLها را در `PATH` قرار دهید. اگر CUDA قابل بارگذاری نباشد، `device="auto"` به CPU برمی‌گردد.
+
+اجرای رونویسی مستقیم:
+
+```bash
+python -c "from transcriber import Transcriber; print(Transcriber(model_size='base', device='auto').transcribe('output_clean.wav').to_dict())"
+```
+
+بنچمارک CPU و GPU:
+
+```bash
+python benchmark.py output_clean.wav --model base
+```
+
+برای تست اولیه می‌توان مدل `small` را نیز استفاده کرد؛ مدل‌ها در اولین اجرا دانلود می‌شوند. تست‌های واحد گام دوم با مدل واقعی کار نمی‌کنند و برای سرعت، API مدل را mock می‌کنند:
+
+```bash
+python -m pytest -q
+```
