@@ -3,7 +3,8 @@ from types import SimpleNamespace
 
 import pytest
 
-from medical_reporter import MedicalReporter
+import medical_reporter
+from medical_reporter import MedicalReporter, generate_report_from_file
 
 
 class FakeCompletions:
@@ -23,7 +24,10 @@ class FakeClient:
 
 
 def test_defaults_and_custom_configuration(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(medical_reporter, "load_dotenv", lambda: False)
     monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+    monkeypatch.delenv("OPENAI_BASE_URL", raising=False)
+    monkeypatch.delenv("OPENAI_MODEL", raising=False)
     reporter = MedicalReporter(client=object())
     assert reporter.model == "gpt-5.6-terra"
     assert reporter.base_url == "https://api.openai.com/v1"
@@ -67,3 +71,15 @@ def test_api_failure_does_not_log_transcript(caplog: pytest.LogCaptureFixture) -
     with caplog.at_level(logging.ERROR), pytest.raises(RuntimeError):
         reporter.generate_report(transcript)
     assert transcript not in caplog.text
+
+
+def test_generate_report_from_file_reads_and_writes_utf8(tmp_path):
+    source = tmp_path / "result.txt"
+    destination = tmp_path / "report.txt"
+    source.write_text("بیمار تب دارد.", encoding="utf-8")
+    reporter = type("Reporter", (), {"generate_report": lambda self, text: f"گزارش: {text}"})()
+
+    result = generate_report_from_file(source, destination, reporter=reporter)
+
+    assert result == destination
+    assert destination.read_text(encoding="utf-8") == "گزارش: بیمار تب دارد."

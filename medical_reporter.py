@@ -4,6 +4,9 @@ from __future__ import annotations
 
 import logging
 import time
+import argparse
+import sys
+from pathlib import Path
 from typing import Any
 
 try:
@@ -128,7 +131,40 @@ class MedicalReporter:
         return int(value or 0)
 
 
+def generate_report_from_file(
+    input_path: str | Path = "result.txt",
+    output_path: str | Path = "report.txt",
+    reporter: MedicalReporter | None = None,
+) -> Path:
+    """متن UTF-8 را از فایل می‌خواند و گزارش UTF-8 تولیدشده را ذخیره می‌کند."""
+    source = Path(input_path)
+    destination = Path(output_path)
+    if not source.is_file():
+        raise FileNotFoundError(f"فایل متن ورودی پیدا نشد: {source}")
+
+    transcript = source.read_text(encoding="utf-8-sig")
+    report = (reporter or MedicalReporter()).generate_report(transcript)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+    destination.write_text(report, encoding="utf-8", newline="\n")
+    return destination
+
+
+def _configure_utf8_console() -> None:
+    """در ویندوز، کنسول را برای نمایش امن متن فارسی آماده می‌کند."""
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8", errors="replace")
+
+
 if __name__ == "__main__":
+    _configure_utf8_console()
+    parser = argparse.ArgumentParser(description="تبدیل transcript پزشکی UTF-8 به report.txt")
+    parser.add_argument("input", nargs="?", default="result.txt", help="فایل transcript ورودی")
+    parser.add_argument("-o", "--output", default="report.txt", help="فایل گزارش خروجی")
+    args = parser.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
-    sample_transcript = "بیمار از سردرد خفیف از دیروز شکایت دارد و تب را انکار می‌کند."
-    print(MedicalReporter().generate_report(sample_transcript))
+    try:
+        output = generate_report_from_file(args.input, args.output)
+        print(f"گزارش پزشکی در فایل زیر ذخیره شد: {output}")
+    except (FileNotFoundError, ValueError, RuntimeError, ImportError) as exc:
+        parser.error(str(exc))

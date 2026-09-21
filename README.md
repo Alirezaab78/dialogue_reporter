@@ -61,6 +61,26 @@ report = MedicalReporter().generate_report(transcript)
 
 لاگ فقط latency و تعداد توکن‌های ورودی/خروجی را ثبت می‌کند و transcript یا گزارش پزشکی را چاپ نمی‌کند.
 
+## اجرای End-to-End Pipeline
+
+اجرای کامل صوت تا گزارش نهایی:
+
+```bash
+python main.py output_clean.wav --model base --device auto
+```
+
+این دستور transcript را در `result.txt` و گزارش نهایی را با UTF-8 در `final_medical_report.txt` ذخیره می‌کند و فقط مسیر خروجی و زمان کل را در ترمینال نمایش می‌دهد. مسیرها قابل تغییرند:
+
+```bash
+python main.py sample.wav -o reports/final_medical_report.txt --transcript-output reports/result.txt --device cuda
+```
+
+برای تبدیل یک transcript موجود به گزارش مستقل:
+
+```bash
+python medical_reporter.py result.txt -o report.txt
+```
+
 ## گام دوم: رونویسی با Faster-Whisper
 
 وابستگی `faster-whisper` در `requirements.txt` اضافه شده است. برای نصب:

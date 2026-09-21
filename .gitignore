@@ -10,6 +10,8 @@ __pycache__/
 *.flac
 models/
 result.txt
+report.txt
+final_medical_report.txt
 
 # فایل‌های تنظیمات محلی
 .env
