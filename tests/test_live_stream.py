@@ -22,7 +22,15 @@ def test_transcribe_uses_required_farsi_settings():
 
     assert result == [(0.0, 1.0, "سلام بیمار")]
     options = model.calls[0][1]
-    assert options == {"language": "fa", "beam_size": 3, "vad_filter": True}
+    assert options["language"] == "fa"
+    assert options["task"] == "transcribe"
+    assert options["temperature"] == 0.0
+    assert options["beam_size"] == 3
+    assert options["best_of"] == 3
+    assert options["condition_on_previous_text"] is False
+    assert options["repetition_penalty"] == 1.1
+    assert options["vad_filter"] is True
+    assert options["vad_parameters"] == {"min_silence_duration_ms": 900, "threshold": 0.4}
 
 
 def test_sliding_window_finalizes_and_shifts_buffer(tmp_path: Path):

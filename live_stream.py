@@ -156,11 +156,27 @@ class LiveStreamTranscriber:
         if samples.size == 0:
             return []
         try:
+            # تبدیل به فلوت ۳۲ بیت استاندارد
+            audio_data = samples.astype(np.float32) / 32768.0
+
+            # # اگر دامنه صدا خیلی ضعیف بود (سکوت مطلق یا نویز ناچیز)، اصلاً پردازش نکن
+            # if np.max(np.abs(audio_data)) < 0.02:
+            #     return []
+
+
             segments, _info = self._model.transcribe(
-                samples.astype(np.float32) / 32768.0,
+                # samples.astype(np.float32) / 32768.0,
+                audio_data,
                 language=self.language,
+                task="transcribe",
+                temperature=0.0,
                 beam_size=3,
+                best_of=3,
+                condition_on_previous_text=False,
+                repetition_penalty=1.1,        # ضد تکرار هجاها و کلمات
+                # no_repeat_ngram_size=3,        # جلوگیری از تکرار عبارت‌های ۳ کلمه‌ای
                 vad_filter=True,
+                vad_parameters=dict(min_silence_duration_ms=900, threshold=0.4),
             )
             return [(float(item.start), float(item.end), str(item.text).strip()) for item in segments]
         except Exception as exc:
@@ -172,9 +188,17 @@ class LiveStreamTranscriber:
 
     @staticmethod
     def _render_live(text: str) -> None:
-        # یک خط بازنویسی می‌شود و متن پزشکی خام در لاگ ذخیره نمی‌گردد.
-        sys.stdout.write("\r\033[2K" + text.replace("\n", " "))
-        sys.stdout.flush()
+        # # یک خط بازنویسی می‌شود و متن پزشکی خام در لاگ ذخیره نمی‌گردد.
+        # sys.stdout.write("\r\033[2K" + text.replace("\n", " "))
+        # sys.stdout.flush()
+        if not text.strip():
+            return
+        # ذخیره آنی در فایل متنی با انکودینگ استاندارد فارسی
+        with open("live_output.txt", "w", encoding="utf-8") as f:
+            f.write(text)
+        
+        # فقط یک پیام کوتاه در ترمینال بدهد که در حال ضبط است
+        print(".", end="", flush=True)
 
     def _require_sounddevice(self) -> None:
         if self._sd is None:

@@ -14,6 +14,7 @@ report.txt
 final_medical_report.txt
 recorded_session.wav
 preprocessed_audio.wav
+live_output.txt
 
 # فایل‌های تنظیمات محلی
 .env
