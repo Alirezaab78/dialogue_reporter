@@ -75,6 +75,32 @@ python main.py output_clean.wav --model base --device auto
 python main.py sample.wav -o reports/final_medical_report.txt --transcript-output reports/result.txt --device cuda
 ```
 
+## ضبط زنده از میکروفون
+
+`AudioRecorder` از `sounddevice`/PortAudio استفاده می‌کند و به‌صورت پیش‌فرض میکروفون ورودی سیستم را انتخاب می‌کند. روی Windows، macOS و Linux نصب می‌شود و خروجی استاندارد مونو، ۱۶ کیلوهرتز و PCM 16-bit تولید می‌کند.
+
+نصب وابستگی‌ها:
+
+```bash
+python -m pip install -r requirements.txt
+```
+
+اجرای ضبط تعاملی؛ با Enter شروع و با Enter دوم پایان می‌یابد:
+
+```bash
+python main.py --record --model base --device auto
+```
+
+برای ضبط زمان‌دار، از API پایتون استفاده کنید:
+
+```python
+from audio_recorder import AudioRecorder
+
+AudioRecorder().record("recorded_session.wav", duration_seconds=30)
+```
+
+در pipeline، ضبط خام ابتدا به `AudioPreprocessor` داده می‌شود، سپس فایل پردازش‌شده به `Transcriber` و در پایان به `MedicalReporter` می‌رسد. این مرز مستقلِ فایل پردازش‌شده، محل مناسبی برای افزودن Speaker Diarization در فاز بعدی است.
+
 برای تبدیل یک transcript موجود به گزارش مستقل:
 
 ```bash

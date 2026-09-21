@@ -8,3 +8,4 @@ ctranslate2>=4.8,<5
 # در ویندوز، درایور NVIDIA و DLLهای CUDA/cuDNN باید جداگانه نصب و در PATH قرار گیرند.
 openai>=1.68,<2
 python-dotenv>=1.0,<2
+sounddevice>=0.5,<1

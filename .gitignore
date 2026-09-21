@@ -12,6 +12,8 @@ models/
 result.txt
 report.txt
 final_medical_report.txt
+recorded_session.wav
+preprocessed_audio.wav
 
 # فایل‌های تنظیمات محلی
 .env

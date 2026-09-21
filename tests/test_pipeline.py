@@ -14,6 +14,13 @@ class FakeReporter:
         return "گزارش پزشکی\nشکایت اصلی: سردرد"
 
 
+class FakePreprocessor:
+    def preprocess(self, audio_path, output_path):
+        assert Path(audio_path).exists()
+        Path(output_path).write_bytes(b"fake processed audio")
+        return Path(output_path)
+
+
 def test_pipeline_writes_utf8_transcript_and_report(tmp_path: Path) -> None:
     audio = tmp_path / "input.wav"
     audio.write_bytes(b"fake audio")
@@ -26,6 +33,7 @@ def test_pipeline_writes_utf8_transcript_and_report(tmp_path: Path) -> None:
         transcript_output_path=transcript_path,
         transcriber=FakeTranscriber(),
         reporter=FakeReporter(),
+        preprocessor=FakePreprocessor(),
     )
 
     assert output == report_path
