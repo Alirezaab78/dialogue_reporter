@@ -35,6 +35,32 @@ print(output)
 python -m pytest -q
 ```
 
+## گام سوم: تولید گزارش پزشکی
+
+برای استفاده از [medical_reporter.py](medical_reporter.py)، فایل `.env.example` را به `.env` کپی و مقادیر آن را تنظیم کنید:
+
+```bash
+copy .env.example .env
+```
+
+برای OpenAI رسمی، مقدار `OPENAI_BASE_URL` همان `https://api.openai.com/v1` است. برای سرویس‌های OpenAI-compatible فقط `OPENAI_BASE_URL` و `OPENAI_API_KEY` را تغییر دهید؛ نیازی به تغییر کد نیست.
+
+اجرای تست ساده:
+
+```bash
+python medical_reporter.py
+```
+
+استفاده در کد:
+
+```python
+from medical_reporter import MedicalReporter
+
+report = MedicalReporter().generate_report(transcript)
+```
+
+لاگ فقط latency و تعداد توکن‌های ورودی/خروجی را ثبت می‌کند و transcript یا گزارش پزشکی را چاپ نمی‌کند.
+
 ## گام دوم: رونویسی با Faster-Whisper
 
 وابستگی `faster-whisper` در `requirements.txt` اضافه شده است. برای نصب:
