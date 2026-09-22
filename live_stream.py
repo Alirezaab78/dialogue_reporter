@@ -156,28 +156,124 @@ class LiveStreamTranscriber:
         if samples.size == 0:
             return []
         try:
-            # تبدیل به فلوت ۳۲ بیت استاندارد
-            audio_data = samples.astype(np.float32) / 32768.0
+            # # تبدیل به فلوت ۳۲ بیت استاندارد
+            # audio_data = samples.astype(np.float32) / 32768.0
 
-            # # اگر دامنه صدا خیلی ضعیف بود (سکوت مطلق یا نویز ناچیز)، اصلاً پردازش نکن
+            # # # اگر دامنه صدا خیلی ضعیف بود (سکوت مطلق یا نویز ناچیز)، اصلاً پردازش نکن
+            # # if np.max(np.abs(audio_data)) < 0.02:
+            # #     return []
+
+
+            # segments, _info = self._model.transcribe(
+            #     # samples.astype(np.float32) / 32768.0,
+            #     audio_data,
+            #     language=self.language,
+            #     task="transcribe",
+            #     temperature=0.0,
+            #     beam_size=3,
+            #     best_of=3,
+            #     condition_on_previous_text=False,
+            #     repetition_penalty=1.1,        # ضد تکرار هجاها و کلمات
+            #     # no_repeat_ngram_size=3,        # جلوگیری از تکرار عبارت‌های ۳ کلمه‌ای
+            #     vad_filter=True,
+            #     vad_parameters=dict(min_silence_duration_ms=900, threshold=0.4, speech_pad_ms=200),
+            # )
+
+            # # تبدیل به فلوت ۳۲ بیت استاندارد
+            # audio_data = samples.astype(np.float32) / 32768.0
+
+            # # ۱. فعال کردن فیلتر سکوت/نویز مطلق میکروفون (از کامنت خارج شد)
             # if np.max(np.abs(audio_data)) < 0.02:
             #     return []
 
+            # segments, _info = self._model.transcribe(
+            #     audio_data,
+            #     language=self.language,
+            #     task="transcribe",
+            #     temperature=0.0,
+            #     beam_size=1,            # تغییر به ۱: در لایو بسیار سریع‌تر و با توهم کمتر عمل می‌کند
+            #     best_of=1,              # هماهنگ با beam_size=1
+            #     condition_on_previous_text=False,
+            #     repetition_penalty=1.1,
+            #     vad_filter=True,
+            #     vad_parameters=dict(
+            #         min_silence_duration_ms=500,  # کاهش به ۵۰۰ میلی‌ثانیه برای برش سریع‌تر سکوت‌ها
+            #         threshold=0.5,                # استاندارد تشخیص گفتار واقعی
+            #         speech_pad_ms=200
+            #     ),
+            #     no_speech_threshold=0.6,          # مهم: اگر سکوت بود، کلمه تولید نکن
+            #     log_prob_threshold=-1.0           # مهم: اگر به متن اطمینان نداری ردش کن
+            # )
+
+
+
+            # # تبدیل به اعشاری
+            # audio_data = samples.astype(np.float32) / 32768.0
+
+            # # ۱. افزایش آستانه سکوت (اگر نویز فن یا هوا هست، عدد را روی 0.03 یا 0.04 بگذارید)
+            # # با این خط، در سکوت هیچ پردازشی انجام نمی‌شود
+            # if np.max(np.abs(audio_data)) < 0.05:
+            #     return []
+
+            # segments, _info = self._model.transcribe(
+            #     audio_data,
+            #     language=self.language,
+            #     task="transcribe",
+            #     temperature=0.0,
+            #     beam_size=1,
+            #     best_of=1,
+            #     # جلوگیری از به خاطر سپردن توهم قبلی
+            #     condition_on_previous_text=False,
+            #     repetition_penalty=1.2,          # افزایش جریمه تکرار
+            #     vad_filter=True,
+            #     vad_parameters=dict(
+            #         min_silence_duration_ms=600,
+            #         threshold=0.65,              # افزایش حساسیت: صدا باید شفاف باشد تا گفتار تلقی شود (پیش‌فرض 0.5 بود)
+            #         speech_pad_ms=150
+            #     ),
+            #     # این دو گزینه در زمان سکوت جلوی کلمه‌سازی الکی را می‌گیرند:
+            #     no_speech_threshold=0.5,         # اگر احتمال سکوت بالای ۵۰ درصد بود متن را دور بریز
+            #     log_prob_threshold=-0.8,         # اگر مدل در درستی کلمات شک دارد، نادیده‌اش بگیر
+            #     # # پرامپت زمینه برای ارتقای چشمگیر دقت عبارات پزشکی و جلوگیری از کلمات چرت:
+            #     # initial_prompt="گفتگوی بالینی و ویزیت پزشکی میان پزشک و بیمار، شرح حال، علائم بیماری و نام داروها."
+            # )
+
+
+
+            # تبدیل به اعشاری
+            audio_data = samples.astype(np.float32) / 32768.0
+
+            # ۱. افزایش آستانه سکوت (اگر نویز فن یا هوا هست، عدد را روی 0.03 یا 0.04 بگذارید)
+            # با این خط، در سکوت هیچ پردازشی انجام نمی‌شود
+            if np.max(np.abs(audio_data)) < 0.05:
+                return []
 
             segments, _info = self._model.transcribe(
-                # samples.astype(np.float32) / 32768.0,
                 audio_data,
                 language=self.language,
                 task="transcribe",
                 temperature=0.0,
-                beam_size=3,
-                best_of=3,
+                beam_size=1,
+                best_of=1,
+                # جلوگیری از به خاطر سپردن توهم قبلی
                 condition_on_previous_text=False,
-                repetition_penalty=1.1,        # ضد تکرار هجاها و کلمات
-                # no_repeat_ngram_size=3,        # جلوگیری از تکرار عبارت‌های ۳ کلمه‌ای
+                repetition_penalty=1.2,          # افزایش جریمه تکرار
                 vad_filter=True,
-                vad_parameters=dict(min_silence_duration_ms=900, threshold=0.4),
+                vad_parameters=dict(
+                    min_silence_duration_ms=600,
+                    threshold=0.2,              # افزایش حساسیت: صدا باید شفاف باشد تا گفتار تلقی شود (پیش‌فرض 0.5 بود)
+                    speech_pad_ms=200
+                ),
+                # این دو گزینه در زمان سکوت جلوی کلمه‌سازی الکی را می‌گیرند:
+                no_speech_threshold=0.1,         # اگر احتمال سکوت بالای ۵۰ درصد بود متن را دور بریز
+                log_prob_threshold=-0.8,         # اگر مدل در درستی کلمات شک دارد، نادیده‌اش بگیر
+                # # پرامپت زمینه برای ارتقای چشمگیر دقت عبارات پزشکی و جلوگیری از کلمات چرت:
+                # initial_prompt="گفتگوی بالینی و ویزیت پزشکی میان پزشک و بیمار، شرح حال، علائم بیماری و نام داروها."
             )
+
+
+
+            
             return [(float(item.start), float(item.end), str(item.text).strip()) for item in segments]
         except Exception as exc:
             raise LiveTranscriptionError("رونویسی قطعه زنده شکست خورد.") from exc
